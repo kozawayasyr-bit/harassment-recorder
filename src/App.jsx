@@ -131,7 +131,7 @@ function generateCSV(records) {
     "加害者",
     "種別",
     "深刻度",
-    "詳細内容�,
+    "詳細内容",
     "目撃者",
     "精神的影響",
     "画像数",
@@ -597,7 +597,7 @@ export default function App() {
         <label style={styles.label}>加害者（氏名・役職など） *</label>
         <input
           style={styles.input}
-          placeholder="例: 屰田部長"
+          placeholder="例: 山田部長"
           value={form.perpetrator}
           onChange={(e) => setForm({ ...form, perpetrator: e.target.value })}
         />
