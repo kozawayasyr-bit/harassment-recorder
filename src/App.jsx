@@ -1101,7 +1101,7 @@ export default function App() {
             <div style={styles.headerSub}>日々の記録を安全に管理</div>
           </div>
           <button
-            onClick={() => setShowInfo(true)}
+            onClick={() => setShowSetup(true)}
             style={{
               background: "none",
               border: "1px solid #d1d5db",
@@ -1214,10 +1214,14 @@ export default function App() {
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                    <span>「ホーム画面に追加」を探してタップ（見つからない場合はスクロール）</span>
+                    <span>一覧に「ホーム画面に追加」があればタップ。<br />見つからない場合は<strong>「もっと見る」</strong>をタップ</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+                    <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
+                    <span>「ホーム画面に追加」をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                    <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
+                    <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>4</span>
                     <span>右上の<strong>「追加」</strong>をタップして完了</span>
                   </div>
                 </div>
@@ -1254,9 +1258,7 @@ export default function App() {
               onClick={() => {
                 setShowSetup(false);
                 localStorage.setItem("harassment_app_setup_done", "1");
-                if (!localStorage.getItem("harassment_app_info_seen")) {
-                  setShowInfo(true);
-                }
+                setShowInfo(true);
               }}
               style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 16 }}
             >
@@ -1266,9 +1268,7 @@ export default function App() {
               onClick={() => {
                 setShowSetup(false);
                 localStorage.setItem("harassment_app_setup_done", "1");
-                if (!localStorage.getItem("harassment_app_info_seen")) {
-                  setShowInfo(true);
-                }
+                setShowInfo(true);
               }}
               style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%", marginTop: 8, fontSize: 12 }}
             >
