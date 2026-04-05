@@ -1208,12 +1208,9 @@ export default function App() {
                   <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 8, fontSize: 14 }}>
                     ホーム画面に追加する
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10, padding: "6px 10px", background: "#fef3c7", borderRadius: 6, border: "1px solid #fde68a" }}>
-                    ※ Safariで開くと確実です。Chromeの場合は「共有」から操作してください。
-                  </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                    <span>画面下部の共有ボタン（⤴️）をタップ</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>「共有」ボタン<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign: "middle", flexShrink: 0}}><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
