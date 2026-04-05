@@ -1288,19 +1288,19 @@ export default function App() {
                           <span style={{ fontSize: 12, color: "#6b7280" }}>今後表示しない</span>
                         </label>
             )}
-                        <button
-              onClick={() => {
-                setShowSetup(false);
-                setIsManualOpen(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
-                setDontShowAgain(false);
-                setShowInfo(true);
-              }}
-              style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 16 }}
-            >
-              {!isStandalone && (
-            設定できました
-            </button>
+                        {!isStandalone && (
+              <button
+                onClick={() => {
+                  setShowSetup(false);
+                  setIsManualOpen(false);
+                  if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
+                  setDontShowAgain(false);
+                  setShowInfo(true);
+                }}
+                style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 16 }}
+              >
+                設定できました
+              </button>
             )}
             <button
               onClick={() => {
