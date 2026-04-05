@@ -236,6 +236,8 @@ function AccessGate({ onUnlock }) {
 // ---- メインコンポーネント ----
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(() => {
+    const isStandalonePWA = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
+    if (isStandalonePWA) return true;
     return localStorage.getItem("harassment_app_unlocked") === "1";
   });
 
