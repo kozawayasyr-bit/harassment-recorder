@@ -194,6 +194,7 @@ export default function App() {
     return true;
   });
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [showGuideTooltip, setShowGuideTooltip] = useState(!localStorage.getItem("harassment_app_guide_read_v2"));
   const fileInputRef = useRef(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
@@ -1101,26 +1102,51 @@ export default function App() {
             <h1 style={styles.headerTitle}>マイメモ</h1>
             <div style={styles.headerSub}>日々の記録を安全に管理</div>
           </div>
-          <button
-            onClick={() => setShowSetup(true)}
-            style={{
-              background: "none",
-              border: "1px solid #d1d5db",
-              borderRadius: "50%",
-              width: 32,
-              height: 32,
-              fontSize: 15,
-              cursor: "pointer",
-              color: "#6b7280",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-            title="このアプリについて"
-          >
-            ?
-          </button>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <button
+              onClick={() => { setShowSetup(true); setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v2", "1"); }}
+              style={{
+                background: "#f0f9ff",
+                border: "1px solid #93c5fd",
+                borderRadius: 16,
+                padding: "6px 12px",
+                fontSize: 13,
+                cursor: "pointer",
+                color: "#2563eb",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontWeight: 600,
+                flexShrink: 0,
+                position: "relative",
+              }}
+              title="使い方・設定"
+            >
+              📖 使い方
+              {!localStorage.getItem("harassment_app_guide_read_v2") && (
+                <span style={{
+                  position: "absolute", top: -4, right: -4,
+                  width: 10, height: 10, borderRadius: "50%",
+                  background: "#ef4444", border: "2px solid #fff",
+                }} />
+              )}
+            </button>
+            {showGuideTooltip && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", right: 0,
+                background: "#1e293b", color: "#fff", padding: "10px 14px",
+                borderRadius: 10, fontSize: 12, lineHeight: 1.6,
+                width: 220, zIndex: 1000, boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}>
+                <div style={{ position: "absolute", top: -6, right: 16, width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "6px solid #1e293b" }} />
+                ホーム画面への追加方法や、大切な注意事項を確認できます。
+                <div
+                  onClick={() => { setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v2", "1"); }}
+                  style={{ marginTop: 8, color: "#93c5fd", cursor: "pointer", fontSize: 11, textAlign: "right" }}
+                >閉じる</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
