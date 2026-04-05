@@ -58,6 +58,7 @@ const INITIAL_FORM = {
   description: "",
   witnesses: "",
   emotionalImpact: "",
+  workImpact: "",
   images: [],
 };
 
@@ -92,8 +93,16 @@ function generatePDFContent(records) {
       ${
         r.emotionalImpact
           ? `<div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">精神的影響</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">精神的・身体的影響</div>
         <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.emotionalImpact)}</div>
+      </div>`
+          : ""
+      }
+      ${
+        r.workImpact
+          ? `<div style="margin-top:10px;">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">業務上の影響</div>
+        <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.workImpact)}</div>
       </div>`
           : ""
       }
@@ -134,6 +143,7 @@ function generateCSV(records) {
     "詳細内容",
     "目撃者",
     "精神的影響",
+    "業務上の影響",
     "画像数",
   ];
   const csvEscape = (s) => {
@@ -154,6 +164,7 @@ function generateCSV(records) {
       r.description,
       r.witnesses,
       r.emotionalImpact,
+      r.workImpact,
       r.images?.length || 0,
     ]
       .map(csvEscape)
@@ -320,6 +331,50 @@ export default function App() {
       console.warn("バックアップ保存に失敗しました", e);
       showToast("バックアップの保存に失敗しました");
     }
+  };
+
+  // エクスポート（機種変更・端末移行用のファイル書き出し）
+  const handleExportBackup = () => {
+    if (records.length === 0) {
+      showToast("エクスポートする記録がありません");
+      return;
+    }
+    const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records }, null, 2);
+    const blob = new Blob([data], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `harassment_backup_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("バックアップファイルをエクスポートしました");
+  };
+
+  // インポート（ファイルからの復元 — 機種変更時に使用）
+  const importInputRef = useRef(null);
+  const handleImportBackup = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.records && Array.isArray(data.records)) {
+          setRecords((prev) => {
+            const existingIds = new Set(prev.map((r) => r.id));
+            const newRecords = data.records.filter((r) => !existingIds.has(r.id));
+            return [...newRecords, ...prev];
+          });
+          showToast(`${data.records.length}件の記録をインポートしました`);
+        } else {
+          showToast("ファイル形式が正しくありません");
+        }
+      } catch {
+        showToast("ファイルの読み込みに失敗しました");
+      }
+    };
+    reader.readAsText(file);
+    if (importInputRef.current) importInputRef.current.value = "";
   };
 
   // バックアップから復元（localStorageから読み込み）
@@ -641,6 +696,16 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
+        <label style={styles.label}>業務上の影響</label>
+        <textarea
+          style={{ ...styles.textarea, minHeight: 60 }}
+          placeholder="業務の遅延、配置転換、評価への影響など"
+          value={form.workImpact}
+          onChange={(e) => setForm({ ...form, workImpact: e.target.value })}
+        />
+      </div>
+
+      <div style={styles.fieldGroup}>
         <label style={styles.label}>写真・スクリーンショット</label>
         <input
           ref={fileInputRef}
@@ -799,7 +864,7 @@ export default function App() {
         ))
       )}
 
-      {/* エクスポートボタン */}
+      {/* データ出力 */}
       {records.length > 0 && (
         <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>データ出力</div>
@@ -811,32 +876,52 @@ export default function App() {
               CSV出力
             </button>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={handleBackup} style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db" }}>
-              バックアップ保存
-            </button>
-            <button
-              onClick={handleRestore}
-              style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: hasBackup() ? 1 : 0.4 }}
-              disabled={!hasBackup()}
-            >
-              復元{hasBackup() ? "" : "（未保存）"}
-            </button>
-          </div>
         </div>
       )}
 
-      {/* 記録がない場合もバックアップ復元は可能 */}
-      {records.length === 0 && hasBackup() && (
-        <div style={{ marginTop: 20 }}>
+      {/* バックアップ・復元（常に表示） */}
+      <div style={{ marginTop: records.length > 0 ? 12 : 20, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>バックアップ</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={handleBackup}
+            style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: records.length > 0 ? 1 : 0.4 }}
+            disabled={records.length === 0}
+          >
+            バックアップ保存
+          </button>
           <button
             onClick={handleRestore}
-            style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%" }}
+            style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: hasBackup() ? 1 : 0.4 }}
+            disabled={!hasBackup()}
           >
-            バックアップから復元
+            復元{hasBackup() ? "" : "（未保存）"}
           </button>
         </div>
-      )}
+        <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>機種変更・端末移行</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={handleExportBackup}
+            style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", fontSize: 12, opacity: records.length > 0 ? 1 : 0.4 }}
+            disabled={records.length === 0}
+          >
+            ファイルに書き出し
+          </button>
+          <button
+            onClick={() => importInputRef.current?.click()}
+            style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", fontSize: 12 }}
+          >
+            ファイルから復元
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".txt,.json"
+            style={{ display: "none" }}
+            onChange={handleImportBackup}
+          />
+        </div>
+      </div>
     </div>
   );
 
@@ -915,6 +1000,24 @@ export default function App() {
                 }}
               >
                 {r.emotionalImpact}
+              </div>
+            </div>
+          )}
+
+          {r.workImpact && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>業務上の影響</div>
+              <div
+                style={{
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  whiteSpace: "pre-wrap",
+                  background: "#f9fafb",
+                  padding: 12,
+                  borderRadius: 8,
+                }}
+              >
+                {r.workImpact}
               </div>
             </div>
           )}
@@ -1062,7 +1165,7 @@ export default function App() {
               </div>
               <div style={{ padding: "10px 12px", background: "#eff6ff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
                 <span style={{ fontWeight: 600, color: "#1e40af" }}>バックアップ機能</span><br />
-                一覧画面の「バックアップ保存」ボタンを押すと、記録のコピーが端末内に自動保存されます。万が一データが消えても「復元」ボタンで元に戻せます。
+                一覧画面の「バックアップ保存」ボタンを押すと、記録のコピーが端末内に自動保存されます。万が一データが消えても「復元」ボタンで元に戻せます。機種変更時は「ファイルに書き出し」→新端末で「ファイルから復元」でデータを移行できます。
               </div>
             </div>
             <button
