@@ -1203,7 +1203,7 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ position: "relative" }}>
-              <button onClick={() => { setShowSetup(false); setIsManualOpen(false); setDontShowAgain(false); }} style={{ position: "absolute", top: -8, right: -8, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9ca3af", padding: 4, lineHeight: 1 }} aria-label="閉じる">×</button>
+              <button onClick={() => { setShowSetup(false); setIsManualOpen(false); setDontShowAgain(false); setShowInfo(true); }} style={{ position: "absolute", top: -8, right: -8, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9ca3af", padding: 4, lineHeight: 1 }} aria-label="閉じる">×</button>
             </div>
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, textAlign: "center", color: "#374151" }}>
               はじめに
