@@ -1273,6 +1273,12 @@ export default function App() {
             >
               わかりました
             </button>
+            <button
+              onClick={() => { setShowInfo(false); setShowSetup(true); }}
+              style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%", marginTop: 8, fontSize: 12 }}
+            >
+              ホーム画面への追加方法を見る
+            </button>
           </div>
         </div>
       )}
