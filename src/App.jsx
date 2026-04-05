@@ -775,7 +775,7 @@ export default function App() {
         >
           キャンセル
         </button>
-        <button onClick={hndleSave} style={{ ...styles.btn("#374151", "#fff"), flex: 2 }}>
+        <button onClick={handleSave} style={{ ...styles.btn("#374151", "#fff"), flex: 2 }}>
           {editingId ? "更新する" : "記録を保存"}
         </button>
       </div>
