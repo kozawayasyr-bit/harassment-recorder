@@ -194,6 +194,26 @@ export default function App() {
     return true;
   });
   const fileInputRef = useRef(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  // beforeinstallprompt: Android Chrome etc.
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === "accepted") {
+      showToast("インストールしました！");
+      setShowSetup(false);
+      localStorage.setItem("harassment_app_setup_done", "1");
+    }
+    setDeferredPrompt(null);
+  };
   // importInputRef は不要（バックアップをlocalStorage方式に変更）
 
   // recordsが変わるたびにlocalStorageに保存
@@ -1165,19 +1185,39 @@ export default function App() {
             </div>
 
             {/* iOS向け */}
-            {/iPhone|iPad|iPod/.test(navigator.userAgent) ? (
+            {deferredPrompt ? (
+              <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
+                <div style={{ padding: "12px", background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", marginBottom: 12, textAlign: "center" }}>
+                  <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 12, fontSize: 14 }}>
+                    ワンタップでインストール
+                  </div>
+                  <button
+                    onClick={handleInstallClick}
+                    style={{ padding: "12px 32px", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#3b82f6", color: "#fff" }}
+                  >
+                    ホーム画面に追加
+                  </button>
+                </div>
+                <div style={{ padding: "10px 12px", background: "#f0fdf4", borderRadius: 8, border: "1px solid #bbf7d0", fontSize: 12, color: "#166534" }}>
+                  ホーム画面から起動すると、通常のアプリと同じように全画面で使えます。
+                </div>
+              </div>
+            ) : /iPhone|iPad|iPod/.test(navigator.userAgent) ? (
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
                 <div style={{ padding: "12px", background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 8, fontSize: 14 }}>
                     ホーム画面に追加する
                   </div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10, padding: "6px 10px", background: "#fef3c7", borderRadius: 6, border: "1px solid #fde68a" }}>
+                    ※ Safariで開くと確実です。Chromeの場合は「共有」から操作してください。
+                  </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                    <span>画面下部の <span style={{ fontSize: 18, verticalAlign: "middle" }}>&#x2934;&#xFE0F;</span>（共有ボタン）をタップ</span>
+                    <span>画面下部の共有ボタン（⤴️）をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                    <span>メニューを上にスクロールして<br /><strong>「ホーム画面に追加」</strong>をタッブ</span>
+                    <span>「ホーム画面に追加」を探してタップ（見つからない場合はスクロール）</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
@@ -1189,7 +1229,6 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              /* Android向け */
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
                 <div style={{ padding: "12px", background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 8, fontSize: 14 }}>
@@ -1214,7 +1253,7 @@ export default function App() {
               </div>
             )}
 
-            <button
+                        <button
               onClick={() => {
                 setShowSetup(false);
                 localStorage.setItem("harassment_app_setup_done", "1");
