@@ -176,25 +176,15 @@ export default function App() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showInfo, setShowInfo] = useState(() => !localStorage.getItem("harassment_app_info_seen"));
   const fileInputRef = useRef(null);
-  const importInputRef = useRef(null);
+  // importInputRef は不要（バックアップをlocalStorage方式に変更）
 
   // recordsが変わるたびにlocalStorageに保存
   useEffect(() => {
     saveRecords(records);
   }, [records]);
 
-  // 自動バックアップ（ダウンロードフォルダに保存）
-  const downloadBackup = useCallback((recs) => {
-    if (recs.length === 0) return;
-    const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records: recs }, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ハラスメント記録_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
+  // バックアップ用のlocalStorageキー
+  const BACKUP_KEY = "harassment_backup_v1";
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -316,47 +306,54 @@ export default function App() {
     showToast("CSVファイルをダウンロードしました");
   };
 
-  // JSONバックアップ
+  // バックアップ保存（localStorageに保存）
   const handleBackup = () => {
     if (records.length === 0) {
       showToast("バックアップする記録がありません");
       return;
     }
-    const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records }, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `harassment_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("バックアップファイルを保存しました");
+    try {
+      const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records });
+      localStorage.setItem(BACKUP_KEY, data);
+      showToast(`${records.length}件の記録をバックアップしました`);
+    } catch (e) {
+      console.warn("バックアップ保存に失敗しました", e);
+      showToast("バックアップの保存に失敗しました");
+    }
   };
 
-  // JSON復元
-  const handleRestore = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if (data.records && Array.isArray(data.records)) {
-          setRecords((prev) => {
-            const existingIds = new Set(prev.map((r) => r.id));
-            const newRecords = data.records.filter((r) => !existingIds.has(r.id));
-            return [...newRecords, ...prev];
-          });
-          showToast(`${data.records.length}件の記録を復元しました`);
-        } else {
-          showToast("無効なバックアップファイルです");
-        }
-      } catch {
-        showToast("ファイルの読み込みに失敗しました");
+  // バックアップから復元（localStorageから読み込み）
+  const handleRestore = () => {
+    try {
+      const raw = localStorage.getItem(BACKUP_KEY);
+      if (!raw) {
+        showToast("バックアップデータがありません");
+        return;
       }
-    };
-    reader.readAsText(file);
-    if (importInputRef.current) importInputRef.current.value = "";
+      const data = JSON.parse(raw);
+      if (data.records && Array.isArray(data.records)) {
+        setRecords((prev) => {
+          const existingIds = new Set(prev.map((r) => r.id));
+          const newRecords = data.records.filter((r) => !existingIds.has(r.id));
+          return [...newRecords, ...prev];
+        });
+        const savedDate = data.exportedAt ? new Date(data.exportedAt).toLocaleString("ja-JP") : "";
+        showToast(`${data.records.length}件の記録を復元しました${savedDate ? `（${savedDate}時点）` : ""}`);
+      } else {
+        showToast("バックアップデータが無効です");
+      }
+    } catch {
+      showToast("復元に失敗しました");
+    }
+  };
+
+  // バックアップの有無を確認
+  const hasBackup = () => {
+    try {
+      return !!localStorage.getItem(BACKUP_KEY);
+    } catch {
+      return false;
+    }
   };
 
   // ---- スタイル ----
@@ -819,26 +816,25 @@ export default function App() {
               バックアップ保存
             </button>
             <button
-              onClick={() => importInputRef.current?.click()}
-              style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db" }}
+              onClick={handleRestore}
+              style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: hasBackup() ? 1 : 0.4 }}
+              disabled={!hasBackup()}
             >
-              復元
+              復元{hasBackup() ? "" : "（未保存）"}
             </button>
           </div>
-          <input ref={importInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleRestore} />
         </div>
       )}
 
       {/* 記録がない場合もバックアップ復元は可能 */}
-      {records.length === 0 && (
+      {records.length === 0 && hasBackup() && (
         <div style={{ marginTop: 20 }}>
           <button
-            onClick={() => importInputRef.current?.click()}
+            onClick={handleRestore}
             style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%" }}
           >
             バックアップから復元
           </button>
-          <input ref={importInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleRestore} />
         </div>
       )}
     </div>
@@ -1066,7 +1062,7 @@ export default function App() {
               </div>
               <div style={{ padding: "10px 12px", background: "#eff6ff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
                 <span style={{ fontWeight: 600, color: "#1e40af" }}>バックアップ機能</span><br />
-                一覧画面の「バックアップ保存」ボタンから、記録をファイルとして保存できます。万が一データが消えても、「復元」ボタンで元に戻せます。
+                一覧画面の「バックアップ保存」ボタンを押すと、記録のコピーが端末内に自動保存されます。万が一データが消えても「復元」ボタンで元に戻せます。
               </div>
             </div>
             <button
