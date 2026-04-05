@@ -1,51 +1,51 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // ============================================================
-// ãã©ã¹ã¡ã³ãè¨¼æ¢è¨é²ã¢ããª
-// ãã¯ãã©ã»ã¢ã©ãã©ã®è¨é²ãå®å¨ã«ä¿å­ã»ç®¡çãããã¼ã«
+// ハラスメント証拠記録アプリ
+// パワハラ・モラハラの記録を安全に保存・管理するツール
 // ============================================================
 
 const STORAGE_KEY = "harassment_records_v1";
 
-// localStorageããèª­ã¿è¾¼ã¿
+// localStorageから読み込み
 function loadRecords() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) return JSON.parse(data);
   } catch (e) {
-    console.warn("ãã¼ã¿ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã", e);
+    console.warn("データの読み込みに失敗しました", e);
   }
   return [];
 }
 
-// localStorageã«ä¿å­
+// localStorageに保存
 function saveRecords(records) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   } catch (e) {
-    console.warn("ãã¼ã¿ã®ä¿å­ã«å¤±æãã¾ãã", e);
+    console.warn("データの保存に失敗しました", e);
   }
 }
 
 const HARASSMENT_TYPES = [
-  "ãã¯ãã©ï¼å¨å§ã»æ´è¨ï¼",
-  "ãã¯ãã©ï¼éå¤§ãªè¦æ±ï¼",
-  "ãã¯ãã©ï¼éå°ãªè¦æ±ã»ä»äºå¤ãï¼",
-  "ãã¯ãã©ï¼äººéé¢ä¿ã®åãé¢ãï¼",
-  "ãã¯ãã©ï¼åã®ä¾µå®³ï¼",
-  "ãã¯ãã©ï¼èº«ä½çæ»æï¼",
-  "ã¢ã©ãã©ï¼ç¡è¦ã»æé¤ï¼",
-  "ã¢ã©ãã©ï¼äººæ ¼å¦å®ã»ä¾®è¾±ï¼",
-  "ã¢ã©ãã©ï¼ãã©ã¤ãã¼ãã¸ã®å¹²æ¸ï¼",
-  "ã¢ã©ãã©ï¼å«ãããã»é°å£ï¼",
-  "ã»ã¯ãã©",
-  "ãã®ä»",
+  "パワハラ（威圧・暴言）",
+  "パワハラ（過大な要求）",
+  "パワハラ（過小な要求・仕事外し）",
+  "パワハラ（人間関係の切り離し）",
+  "パワハラ（個の侵害）",
+  "パワハラ（身体的攻撃）",
+  "モラハラ（無視・排除）",
+  "モラハラ（人格否定・侮辱）",
+  "モラハラ（プライベートへの干渉）",
+  "モラハラ（嫌がらせ・陰口）",
+  "セクハラ",
+  "その他",
 ];
 
 const SEVERITY_LEVELS = [
-  { value: 1, label: "è»½åº¦", color: "#6b7280", bg: "#f3f4f6" },
-  { value: 2, label: "ä¸­åº¦", color: "#d97706", bg: "#fef3c7" },
-  { value: 3, label: "éåº¦", color: "#dc2626", bg: "#fee2e2" },
+  { value: 1, label: "軽度", color: "#6b7280", bg: "#f3f4f6" },
+  { value: 2, label: "中度", color: "#d97706", bg: "#fef3c7" },
+  { value: 3, label: "重度", color: "#dc2626", bg: "#fee2e2" },
 ];
 
 const INITIAL_FORM = {
@@ -62,7 +62,7 @@ const INITIAL_FORM = {
   images: [],
 };
 
-// ---- PDFçæ ----
+// ---- PDF生成 ----
 function generatePDFContent(records) {
   const escHtml = (s) =>
     String(s)
@@ -81,19 +81,19 @@ function generatePDFContent(records) {
         </span>
       </div>
       <table style="width:100%;font-size:13px;border-collapse:collapse;">
-        <tr><td style="color:#6b7280;width:100px;padding:4px 0;">ç¨®å¥</td><td>${escHtml(r.type)}</td></tr>
-        <tr><td style="color:#6b7280;padding:4px 0;">å å®³è</td><td>${escHtml(r.perpetrator)}</td></tr>
-        <tr><td style="color:#6b7280;padding:4px 0;">å ´æ</td><td>${escHtml(r.location)}</td></tr>
-        ${r.witnesses ? `<tr><td style="color:#6b7280;padding:4px 0;">ç®æè</td><td>${escHtml(r.witnesses)}</td></tr>` : ""}
+        <tr><td style="color:#6b7280;width:100px;padding:4px 0;">種別</td><td>${escHtml(r.type)}</td></tr>
+        <tr><td style="color:#6b7280;padding:4px 0;">加害者</td><td>${escHtml(r.perpetrator)}</td></tr>
+        <tr><td style="color:#6b7280;padding:4px 0;">場所</td><td>${escHtml(r.location)}</td></tr>
+        ${r.witnesses ? `<tr><td style="color:#6b7280;padding:4px 0;">目撃者</td><td>${escHtml(r.witnesses)}</td></tr>` : ""}
       </table>
       <div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">è©³ç´°åå®¹</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">詳細内容</div>
         <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.description)}</div>
       </div>
       ${
         r.emotionalImpact
           ? `<div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">ç²¾ç¥çã»hº«ä½çå½±é¿</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">精神的・身体的影響</div>
         <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.emotionalImpact)}</div>
       </div>`
           : ""
@@ -101,7 +101,7 @@ function generatePDFContent(records) {
       ${
         r.workImpact
           ? `<div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">æ¥­åä¸ã®å½±é¿</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">業務上の影響</div>
         <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.workImpact)}</div>
       </div>`
           : ""
@@ -109,7 +109,7 @@ function generatePDFContent(records) {
       ${
         r.images && r.images.length > 0
           ? `<div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">æ·»ä»ç»å (${r.images.length}ä»¶)</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">添付画像 (${r.images.length}件)</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           ${r.images.map((img) => `<img src="${img}" style="max-width:200px;max-height:150px;border-radius:4px;border:1px solid #e5e7eb;" />`).join("")}
         </div>
@@ -120,31 +120,31 @@ function generatePDFContent(records) {
     )
     .join("");
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ãã©ã¹ã¡ã³ãè¨¼æ è¨é²</title>
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ハラスメント証拠記録</title>
 <style>@media print{body{margin:0;padding:20px;}}</style></head>
 <body style="font-family:'Hiragino Sans','Meiryo',sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#1f2937;">
-<h1 style="font-size:20px;border-bottom:2px solid #374151;padding-bottom:12px;margin-bottom:8px;">ãã¤ã¡ã¢ - è¨é²ä¸è¦§</h1>
-<p style="font-size:12px;color:#6b7280;margin-bottom:24px;">åºåæ¥: ${new Date().toLocaleDateString("ja-JP")}ã/ãè¨é²ä»¶æ°: ${records.length}ä»¶</p>
+<h1 style="font-size:20px;border-bottom:2px solid #374151;padding-bottom:12px;margin-bottom:8px;">マイメモ - 記録一覧</h1>
+<p style="font-size:12px;color:#6b7280;margin-bottom:24px;">出力日: ${new Date().toLocaleDateString("ja-JP")}　/　記録件数: ${records.length}件</p>
 ${rows}
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center;">
-ãã®ææ¸ã¯ããã¤ã¡ã¢ãã«ããèªåçæããã¾ãã
+この文書は「マイメモ」により自動生成されました
 </div></body></html>`;
 }
 
-// ---- CSVçæ ----
+// ---- CSV生成 ----
 function generateCSV(records) {
   const headers = [
-    "æ¥ä»",
-    "æå»",
-    "å ´æ",
-    "å å®³è",
-    "ç¨®å¥",
-    "æ·±å»åº¦",
-    "è©³ç´°åå®¹",
-    "ç®æè",
-    "ç²¾ç¥çå½±é¿",
-    "æ¥­åä¸ã®å½±é¿",
-    "ç»åæ°",
+    "日付",
+    "時刻",
+    "場所",
+    "加害者",
+    "種別",
+    "深刻度",
+    "詳細内容",
+    "目撃者",
+    "精神的影響",
+    "業務上の影響",
+    "画像数",
   ];
   const csvEscape = (s) => {
     const str = String(s || "");
@@ -173,7 +173,7 @@ function generateCSV(records) {
   return "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
 }
 
-// ---- ã¡ã¤ã³ã³ã³ãã¼ãã³ã ----
+// ---- メインコンポーネント ----
 export default function App() {
   const [records, setRecords] = useState(() => loadRecords());
   const [form, setForm] = useState({ ...INITIAL_FORM, date: new Date().toISOString().split("T")[0] });
@@ -188,20 +188,20 @@ export default function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [showSetup, setShowSetup] = useState(() => {
     if (localStorage.getItem("harassment_app_setup_done")) return false;
-    // PWAã¨ãã¦èµ·åæ¸ã¿ãªãã»ããã¢ããä¸è¦
+    // PWAとして起動済みならセットアップ不要
     if (window.matchMedia("(display-mode: standalone)").matches) return false;
     if (window.navigator.standalone) return false;
     return true;
   });
   const fileInputRef = useRef(null);
-  // importInputRef ã¯ä¸è¦ï¼ããã¯ã¢ãããlocalStorageæ¹å¼ã«å¤æ´ï¼
+  // importInputRef は不要（バックアップをlocalStorage方式に変更）
 
-  // recordsãå¤ãããã³ã«localStorageã«ä¿å­
+  // recordsが変わるたびにlocalStorageに保存
   useEffect(() => {
     saveRecords(records);
   }, [records]);
 
-  // ããã¯ã¢ããç¨ã®localStorageã­ã¼
+  // バックアップ用のlocalStorageキー
   const BACKUP_KEY = "harassment_backup_v1";
 
   const showToast = useCallback((msg) => {
@@ -209,7 +209,7 @@ export default function App() {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // ç»åè¿½å 
+  // 画像追加
   const handleImageAdd = (e) => {
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
@@ -225,10 +225,10 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // è¨é²ä¿å­
+  // 記録保存
   const handleSave = () => {
     if (!form.date || !form.type || !form.description || !form.perpetrator) {
-      showToast("æ¥ä»ã»ç¨®å¥ã»å å®³èã»è©³ç´°åå®¹ã¯å¿é ã§ã");
+      showToast("日付・種別・加害者・詳細内容は必須です");
       return;
     }
     let updatedRecords;
@@ -238,7 +238,7 @@ export default function App() {
       );
       setRecords(updatedRecords);
       setEditingId(null);
-      showToast("è¨é²ãæ´æ°ãã¾ãã");
+      showToast("記録を更新しました");
     } else {
       const newRecord = {
         ...form,
@@ -247,15 +247,15 @@ export default function App() {
       };
       updatedRecords = [newRecord, ...records];
       setRecords(updatedRecords);
-      showToast("è¨é²ãä¿å­ãã¾ãã");
+      showToast("記録を保存しました");
     }
-    // æ³¨: èªåãã¦ã³ã­ã¼ãã¯iOSã§åé¡ãèµ·ããããç¡å¹å
-    // æåã®ãããã¯ã¢ããä¿å­ããã¿ã³ãããã¦ã³ã­ã¼ããã¦ãã ãã
+    // 注: 自動ダウンロードはiOSで問題が起きるため無効化
+    // 手動の「バックアップ保存」ボタンからダウンロードしてください
     setForm({ ...INITIAL_FORM, date: new Date().toISOString().split("T")[0] });
     setView("list");
   };
 
-  // åé¤
+  // 削除
   const handleDelete = (id) => {
     setRecords((prev) => prev.filter((r) => r.id !== id));
     setShowDeleteConfirm(null);
@@ -263,17 +263,17 @@ export default function App() {
       setSelectedRecord(null);
       setView("list");
     }
-    showToast("è¨é²ãåé¤ãã¾ãã");
+    showToast("記録を削除しました");
   };
 
-  // ç·¨é
+  // 編集
   const handleEdit = (record) => {
     setForm({ ...record });
     setEditingId(record.id);
     setView("form");
   };
 
-  // ãã£ã«ã¿
+  // フィルタ
   const filteredRecords = useMemo(() => {
     return records.filter((r) => {
       if (filterType && r.type !== filterType) return false;
@@ -291,11 +291,11 @@ export default function App() {
     });
   }, [records, searchQuery, filterType, filterSeverity]);
 
-  // PDFåºå
+  // PDF出力
   const handleExportPDF = () => {
     const target = filteredRecords.length > 0 ? filteredRecords : records;
     if (target.length === 0) {
-      showToast("åºåããè¨é²ãããã¾ãã");
+      showToast("出力する記録がありません");
       return;
     }
     const html = generatePDFContent(target);
@@ -303,14 +303,14 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const w = window.open(url, "_blank");
     if (w) setTimeout(() => w.print(), 500);
-    showToast("PDFåºåç¨ã®ç»é¢ãéãã¾ããï¼å°å·âPDFã§ä¿å­ï¼");
+    showToast("PDF出力用の画面を開きました（印刷→PDFで保存）");
   };
 
-  // CSVåºå
+  // CSV出力
   const handleExportCSV = () => {
     const target = filteredRecords.length > 0 ? filteredRecords : records;
     if (target.length === 0) {
-      showToast("åºåããè¨é²ãããã¾ãã");
+      showToast("出力する記録がありません");
       return;
     }
     const csv = generateCSV(target);
@@ -321,29 +321,29 @@ export default function App() {
     a.download = `harassment_records_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("CSVãã¡ã¤ã«ããã¦ã³ã­ã¼ããã¾ãã");
+    showToast("CSVファイルをダウンロードしました");
   };
 
-  // ããã¯ã¢ããä¿å­ï¼localStorageã«ä¿å­ï¼
+  // バックアップ保存（localStorageに保存）
   const handleBackup = () => {
     if (records.length === 0) {
-      showToast("ããã¯ã¢ããããè¨é²ãããã¾ãã");
+      showToast("バックアップする記録がありません");
       return;
     }
     try {
       const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records });
       localStorage.setItem(BACKUP_KEY, data);
-      showToast(`${records.length}ä»¶ã®è¨é²ãããã¯ã¢ãããã¾ãã`);
+      showToast(`${records.length}件の記録をバックアップしました`);
     } catch (e) {
-      console.warn("ããã¯ã¢ããä¿å­ã«å¤±æãã¾ãã", e);
-      showToast("ããã¯ã¢ããã®ä¿å­ã«å¤±æãã¾ãã");
+      console.warn("バックアップ保存に失敗しました", e);
+      showToast("バックアップの保存に失敗しました");
     }
   };
 
-  // ã¨ã¯ã¹ãã¼ãï¼æ©ç¨®å¤æ´ã»ç«¯æ«ç§»è¡ç¨ã®ãã¡ã¤ã«æ¸ãåºãï¼
+  // エクスポート（機種変更・端末移行用のファイル書き出し）
   const handleExportBackup = () => {
     if (records.length === 0) {
-      showToast("ã¨ã¯ã¹ãã¼ãããè¨é²ãããã¾ãã");
+      showToast("エクスポートする記録がありません");
       return;
     }
     const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records }, null, 2);
@@ -354,10 +354,10 @@ export default function App() {
     a.download = `harassment_backup_${new Date().toISOString().slice(0, 10)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("ããã¯ã¢ãããã¡ã¤ã«ãã¨ã¯ã¹ãã¼ããã¾ãã");
+    showToast("バックアップファイルをエクスポートしました");
   };
 
-  // ã¤ã³ãã¼ãï¼ãã¡ã¤ã«ããã®å¾©å â æ©ç¨®å¤æ´æã«ä½¿ç¨ï¼
+  // インポート（ファイルからの復元 — 機種変更時に使用）
   const importInputRef = useRef(null);
   const handleImportBackup = (e) => {
     const file = e.target.files?.[0];
@@ -372,24 +372,24 @@ export default function App() {
             const newRecords = data.records.filter((r) => !existingIds.has(r.id));
             return [...newRecords, ...prev];
           });
-          showToast(`${data.records.length}ä»¶ã®è¨é²ãã¤ã³ãã¼ããã¾ãã`);
+          showToast(`${data.records.length}件の記録をインポートしました`);
         } else {
-          showToast("ãã¡ã¤ã«å½¢å¼ãæ­£ããããã¾ãã");
+          showToast("ファイル形式が正しくありません");
         }
       } catch {
-        showToast("ãã¡ã¤ã«ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã");
+        showToast("ファイルの読み込みに失敗しました");
       }
     };
     reader.readAsText(file);
     if (importInputRef.current) importInputRef.current.value = "";
   };
 
-  // ããã¯ã¢ããããå¾©åï¼localStorageããèª­ã¿è¾¼ã¿ï¼
+  // バックアップから復元（localStorageから読み込み）
   const handleRestore = () => {
     try {
       const raw = localStorage.getItem(BACKUP_KEY);
       if (!raw) {
-        showToast("ããã¯ã¢ãããã¼ã¿ãããã¾ãã");
+        showToast("バックアップデータがありません");
         return;
       }
       const data = JSON.parse(raw);
@@ -400,16 +400,16 @@ export default function App() {
           return [...newRecords, ...prev];
         });
         const savedDate = data.exportedAt ? new Date(data.exportedAt).toLocaleString("ja-JP") : "";
-        showToast(`${data.records.length}ä»¶ã®è¨é²ãå¾©åãã¾ãã${savedDate ? `ï¼${savedDate}æç¹ï¼` : ""}`);
+        showToast(`${data.records.length}件の記録を復元しました${savedDate ? `（${savedDate}時点）` : ""}`);
       } else {
-        showToast("ããã¯ã¢ãããã¼ã¿ãç¡å¹ã§ã");
+        showToast("バックアップデータが無効です");
       }
     } catch {
-      showToast("å¾©åã«å¤±æãã¾ãã");
+      showToast("復元に失敗しました");
     }
   };
 
-  // ããã¯ã¢ããã®æç¡ãç¢ºèª
+  // バックアップの月無を確認
   const hasBackup = () => {
     try {
       return !!localStorage.getItem(BACKUP_KEY);
@@ -418,7 +418,7 @@ export default function App() {
     }
   };
 
-  // ---- ã¹ã¿ã¤ã« ----
+  // ---- スタイル ----
   const styles = {
     app: {
       fontFamily: "'Hiragino Sans', 'Meiryo', 'Noto Sans JP', sans-serif",
@@ -587,16 +587,16 @@ export default function App() {
     },
   };
 
-  // ---- è¨é²ãã©ã¼ã  ----
+  // ---- 記録フォーム ----
   const renderForm = () => (
     <div>
       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 20, color: "#374151" }}>
-        {editingId ? "è¨é²ãç·¨é" : "æ°ããè¨é²ãè¿½å "}
+        {editingId ? "記録を編集" : "新しい記録を追加"}
       </div>
 
       <div style={styles.row}>
         <div style={{ ...styles.fieldGroup, flex: 1 }}>
-          <label style={styles.label}>æ¥ä» *</label>
+          <label style={styles.label}>日付 *</label>
           <input
             type="date"
             style={styles.input}
@@ -605,7 +605,7 @@ export default function App() {
           />
         </div>
         <div style={{ ...styles.fieldGroup, flex: 1 }}>
-          <label style={styles.label}>æå»</label>
+          <label style={styles.label}>時刻</label>
           <input
             type="time"
             style={styles.input}
@@ -616,9 +616,9 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>ãã©ã¹ã¡ã³ãã®ç¨®å¥ *</label>
+        <label style={styles.label}>ハラスメントの種別 *</label>
         <select style={styles.select} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-          <option value="">é¸æãã¦ãã ãã</option>
+          <option value="">選択してください</option>
           {HARASSMENT_TYPES.map((t) => (
             <option key={t} value={t}>
               {t}
@@ -628,7 +628,7 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>æ·±å»åº¦</label>
+        <label style={styles.label}>深刻度</label>
         <div style={{ display: "flex", gap: 8 }}>
           {SEVERITY_LEVELS.map((s) => (
             <button
@@ -653,67 +653,67 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>å å®³èï¼æ°åã»å½¹è·ãªã©ï¼ *</label>
+        <label style={styles.label}>加害者（氏名・役職など） *</label>
         <input
           style={styles.input}
-          placeholder="ä¾: å±±ç°é¨é·"
+          placeholder="例: 山田部長"
           value={form.perpetrator}
           onChange={(e) => setForm({ ...form, perpetrator: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>å ´æ</label>
+        <label style={styles.label}>場所</label>
         <input
           style={styles.input}
-          placeholder="ä¾: 3éä¼è­°å®¤ããªãã£ã¹ãã­ã¢"
+          placeholder="例: 3风会議室、オフィスフロア"
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>è©³ç´°åå®¹ *</label>
+        <label style={styles.label}>詳細内容 *</label>
         <textarea
           style={styles.textarea}
-          placeholder="ä½ãèµ·ããããå·ä½çã«è¨é²ãã¦ãã ãããçºè¨ã®å¼ç¨ãç¶æ³ãè©³ããæ¸ãã¨è¨¼æ ã¨ãã¦æå¹ã§ãã"
+          placeholder="何が起きたか、具体的に記録してください。発言の引用や状況を詳しく書くと証拠として有効です。"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>ç®æè</label>
+        <label style={styles.label}>目撃者</label>
         <input
           style={styles.input}
-          placeholder="ä¾: é´æ¨ããï¼åãèª²ï¼"
+          placeholder="例: 鈴木さん（同じ課）"
           value={form.witnesses}
           onChange={(e) => setForm({ ...form, witnesses: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>ç²¾ç¥çã»èº«ä½çå½±é¿</label>
+        <label style={styles.label}>精神的・身体的影響</label>
         <textarea
           style={{ ...styles.textarea, minHeight: 60 }}
-          placeholder="ãã®ã¨ãæãããã¨ãä½èª¿ã®å¤åãªã©"
+          placeholder="そのとき感じたこと、体調の変化など"
           value={form.emotionalImpact}
           onChange={(e) => setForm({ ...form, emotionalImpact: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>æ¥­åã¸ã®æ¯é</label>
+        <label style={styles.label}>業務への支障</label>
         <textarea
           style={{ ...styles.textarea, minHeight: 60 }}
-          placeholder="ä¾: æ¥­åã«éä¸­ã§ããªããæå½ãå¤ããããç´æã«éããåºããä¼è­°ã§çºè¨ã§ããªããªã£ã"
+          placeholder="例: 業務に集中できない、担当を外された、納期に遅れが出た、会議で発言できなくなった"
           value={form.workImpact}
           onChange={(e) => setForm({ ...form, workImpact: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>åçã»ã¹ã¯ãªã¼ã³ã·ã§ãã</label>
+        <label style={styles.label}>写真・スクリーンショット</label>
         <input
           ref={fileInputRef}
           type="file"
@@ -730,7 +730,7 @@ export default function App() {
             border: "1px dashed #d1d5db",
           }}
         >
-          + ç»åãè¿½å 
+          + 画像を追加
         </button>
         {form.images.length > 0 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
@@ -756,7 +756,7 @@ export default function App() {
                     justifyContent: "center",
                   }}
                 >
-                  Ã
+                  ×
                 </button>
               </div>
             ))}
@@ -773,30 +773,30 @@ export default function App() {
           }}
           style={{ ...styles.btn("#f3f4f6", "#6b7280"), flex: 1 }}
         >
-          ã­ã£ã³ã»ã«
+          キャンセル
         </button>
-        <button onClick={handleSave} style={{ ...styles.btn("#374151", "#fff"), flex: 2 }}>
-          {editingId ? "æ´æ°ãã" : "è¨é²ãä¿å­"}
+        <button onClick={hndleSave} style={{ ...styles.btn("#374151", "#fff"), flex: 2 }}>
+          {editingId ? "更新する" : "記録を保存"}
         </button>
       </div>
     </div>
   );
 
-  // ---- ä¸è¦§è¡¨ç¤º ----
+  // ---- 一覧表示 ----
   const renderList = () => (
     <div>
-      {/* æ¤ç´¢ */}
+      {/* 検索 */}
       <input
         style={{ ...styles.input, marginBottom: 10, background: "#fff" }}
-        placeholder="ã­ã¼ã¯ã¼ãã§æ¤ç´¢..."
+        placeholder="キーワードで検索..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
-      {/* ãã£ã«ã¿ */}
+      {/* フィルタ */}
       <div style={styles.filterBar}>
         <select style={styles.filterSelect} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-          <option value="">ãã¹ã¦ã®ç¨®å¥</option>
+          <option value="">すべての種別</option>
           {HARASSMENT_TYPES.map((t) => (
             <option key={t} value={t}>
               {t}
@@ -808,7 +808,7 @@ export default function App() {
           value={filterSeverity}
           onChange={(e) => setFilterSeverity(Number(e.target.value))}
         >
-          <option value={0}>ãã¹ã¦ã®æ·±å»åº¦</option>
+          <option value={0}>すべての深刻度</option>
           {SEVERITY_LEVELS.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
@@ -817,20 +817,20 @@ export default function App() {
         </select>
         {records.length > 0 && (
           <span style={{ fontSize: 12, color: "#9ca3af", alignSelf: "center", marginLeft: "auto" }}>
-            {filteredRecords.length}/{records.length}ä»¶
+            {filteredRecords.length}/{records.length}件
           </span>
         )}
       </div>
 
-      {/* è¨é²ä¸è¦§ */}
+      {/* 記録一覧 */}
       {filteredRecords.length === 0 ? (
         <div style={styles.emptyState}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>ð</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
-            {records.length === 0 ? "ã¾ã è¨é²ãããã¾ãã" : "è©²å½ããè¨é²ãããã¾ãã"}
+            {records.length === 0 ? "まだ記録がありません" : "該当する記録がありません"}
           </div>
           <div style={{ fontSize: 13 }}>
-            {records.length === 0 ? "ãè¨é²ãããã¿ãããæåã®è¨é²ãè¿½å ãã¾ããã" : "æ¤ç´¢æ¡ä»¶ãå¤æ´ãã¦ã¿ã¦ãã ãã"}
+            {records.length === 0 ? "「記録する」タブから最初の記録を追加しましょう" : "検索条件を変更してみてください"}
           </div>
         </div>
       ) : (
@@ -850,7 +850,7 @@ export default function App() {
               <span style={styles.badge(r.severity)}>{SEVERITY_LEVELS[r.severity - 1]?.label}</span>
             </div>
             <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
-              {r.type} â {r.perpetrator}
+              {r.type} — {r.perpetrator}
             </div>
             <div
               style={{
@@ -865,60 +865,60 @@ export default function App() {
               {r.description}
             </div>
             {r.images?.length > 0 && (
-              <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 6 }}>ð ç»å {r.images.length}ä»¶</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 6 }}>📎 画像 {r.images.length}件</div>
             )}
           </div>
         ))
       )}
 
-      {/* ãã¼ã¿åºå */}
+      {/* データ出力 */}
       {records.length > 0 && (
         <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>ãã¼ã¿åºå</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>データ出力</div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={handleExportPDF} style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db" }}>
-              PDFåºå
+              PDF出力
             </button>
             <button onClick={handleExportCSV} style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db" }}>
-              CSVåºå
+              CSV出力
             </button>
           </div>
         </div>
       )}
 
-      {/* ããã¯ã¢ããã»å¾©åï¼å¸¸ã«è¡¨ç¤ºï¼ */}
+      {/* バックアップ・復元（常に表示） */}
       <div style={{ marginTop: records.length > 0 ? 12 : 20, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>ããã¯ã¢ãã</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>バックアップ</div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={handleBackup}
             style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: records.length > 0 ? 1 : 0.4 }}
             disabled={records.length === 0}
           >
-            ããã¯ã¢ããä¿å­
+            バックアップ保存
           </button>
           <button
             onClick={handleRestore}
             style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", opacity: hasBackup() ? 1 : 0.4 }}
             disabled={!hasBackup()}
           >
-            å¾©å{hasBackup() ? "" : "ï¼æªä¿å­ï¼"}
+            復元{hasBackup() ? "" : "（未保存）"}
           </button>
         </div>
-        <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>æ©ç¨®å¤æ´ã»ç«¯æ«ç§»è¡</div>
+        <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>機種変更・端末移行</div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={handleExportBackup}
             style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", fontSize: 12, opacity: records.length > 0 ? 1 : 0.4 }}
             disabled={records.length === 0}
           >
-            ãã¡ã¤ã«ã«æ¸ãåºã
+            ファイルに書き出し
           </button>
           <button
             onClick={() => importInputRef.current?.click()}
             style={{ ...styles.btn("#fff", "#374151"), flex: 1, border: "1px solid #d1d5db", fontSize: 12 }}
           >
-            ãã¡ã¤ã«ããå¾©å
+            ファイルから復元
           </button>
           <input
             ref={importInputRef}
@@ -932,7 +932,7 @@ export default function App() {
     </div>
   );
 
-  // ---- è©³ç´°è¡¨ç¤º ----
+  // ---- 詳細表示 ----
   const renderDetail = () => {
     if (!selectedRecord) return null;
     const r = selectedRecord;
@@ -950,7 +950,7 @@ export default function App() {
             marginBottom: 12,
           }}
         >
-          â ä¸è¦§ã«æ»ã
+          ← 一覧に戻る
         </button>
 
         <div style={{ background: "#fff", borderRadius: 12, padding: 20, border: "1px solid #e5e7eb" }}>
@@ -965,9 +965,9 @@ export default function App() {
           </div>
 
           {[
-            ["å å®³è", r.perpetrator],
-            ["å ´æ", r.location],
-            ["ç®æè", r.witnesses],
+            ["加害者", r.perpetrator],
+            ["場所", r.location],
+            ["目撃者", r.witnesses],
           ]
             .filter(([, v]) => v)
             .map(([label, value]) => (
@@ -978,7 +978,7 @@ export default function App() {
             ))}
 
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>è©³ç´°åå®¹</div>
+            <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>詳細内容</div>
             <div
               style={{
                 fontSize: 14,
@@ -995,7 +995,7 @@ export default function App() {
 
           {r.emotionalImpact && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>ç²¾ç¥çã»èº«ä½çå½±é¿</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>精神的・身体的影響</div>
               <div
                 style={{
                   fontSize: 14,
@@ -1013,7 +1013,7 @@ export default function App() {
 
           {r.workImpact && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>æ¥­åä¸ã®å½±é¿</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>業務上の影響</div>
               <div
                 style={{
                   fontSize: 14,
@@ -1031,7 +1031,7 @@ export default function App() {
 
           {r.images?.length > 0 && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 6 }}>æ·»ä»ç»å</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 6 }}>添付画像</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {r.images.map((img, i) => (
                   <img
@@ -1051,19 +1051,19 @@ export default function App() {
           )}
 
           <div style={{ fontSize: 11, color: "#d1d5db", marginTop: 16 }}>
-            è¨é²ID: {r.id} / ä½æ: {r.createdAt ? new Date(r.createdAt).toLocaleString("ja-JP") : "-"}
-            {r.updatedAt && ` / æ´æ°: ${new Date(r.updatedAt).toLocaleString("ja-JP")}`}
+            記録ID: {r.id} / 作成: {r.createdAt ? new Date(r.createdAt).toLocaleString("ja-JP") : "-"}
+            {r.updatedAt && ` / 更新: ${new Date(r.updatedAt).toLocaleString("ja-JP")}`}
           </div>
 
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
             <button onClick={() => handleEdit(r)} style={{ ...styles.btn("#f3f4f6", "#374151"), flex: 1 }}>
-              ç·¨é
+              編集
             </button>
             <button
               onClick={() => setShowDeleteConfirm(r.id)}
               style={{ ...styles.btn("#fee2e2", "#dc2626"), flex: 1 }}
             >
-              åé¤
+              削除
             </button>
           </div>
         </div>
@@ -1073,12 +1073,12 @@ export default function App() {
 
   return (
     <div style={styles.app}>
-      {/* ãããã¼ */}
+      {/* ヘッダー */}
       <div style={styles.header}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 style={styles.headerTitle}>ãã¤ã¡ã¢</h1>
-            <div style={styles.headerSub}>æ¥ãã®è¨é²ãå®å¨ã«ç®¡ç</div>
+            <h1 style={styles.headerTitle}>マイメモ</h1>
+            <div style={styles.headerSub}>日々の記録を安全に管理</div>
           </div>
           <button
             onClick={() => setShowInfo(true)}
@@ -1096,17 +1096,17 @@ export default function App() {
               justifyContent: "center",
               flexShrink: 0,
             }}
-            title="ãã®ã¢ããªã«ã¤ãã¦"
+            title="このアプリについて"
           >
             ?
           </button>
         </div>
       </div>
 
-      {/* ããã²ã¼ã·ã§ã³ */}
+      {/* ナビゲーション */}
       <div style={styles.nav}>
         <button style={styles.navBtn(view === "list" || view === "detail")} onClick={() => setView("list")}>
-          è¨é²ä¸è¦§
+          記録一覧
         </button>
         <button
           style={styles.navBtn(view === "form")}
@@ -1116,41 +1116,41 @@ export default function App() {
             setView("form");
           }}
         >
-          + è¨é²ãã
+          + 記録する
         </button>
       </div>
 
-      {/* ã¡ã¤ã³ã³ã³ãã³ã */}
+      {/* メインコンテンツ */}
       <div style={styles.body}>
         {view === "form" && renderForm()}
         {view === "list" && renderList()}
         {view === "detail" && renderDetail()}
       </div>
 
-      {/* ãã¼ã¹ã */}
+      {/* トースト */}
       {toast && <div style={styles.toast}>{toast}</div>}
 
-      {/* åé¤ç¢ºèªã¢ã¼ãã« */}
+      {/* 削除確認モーダル */}
       {showDeleteConfirm && (
         <div style={styles.deleteOverlay} onClick={() => setShowDeleteConfirm(null)}>
           <div style={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>è¨é²ãåé¤ãã¾ããï¼</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>記録を削除しますか？</div>
             <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
-              ãã®æä½ã¯åãæ¶ãã¾ããã
+              この操作は取り消せません。
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowDeleteConfirm(null)} style={{ ...styles.btn("#f3f4f6", "#6b7280"), flex: 1 }}>
-                ã­ã£ã³ã»ã«
+                キャンセル
               </button>
               <button onClick={() => handleDelete(showDeleteConfirm)} style={{ ...styles.btn("#dc2626", "#fff"), flex: 1 }}>
-                åé¤ãã
+                削除する
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ååã»ããã¢ããã¬ã¤ãï¼ãã¼ã ç»é¢ã«è¿½å ï¼ */}
+      {/* 初回セットアップガイド（ホーム画面に追加） */}
       {showSetup && (
         <div style={styles.deleteOverlay}>
           <div
@@ -1158,58 +1158,58 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, textAlign: "center", color: "#374151" }}>
-              ã¯ããã«
+              はじめに
             </div>
             <div style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", marginBottom: 16 }}>
-              ã¢ããªã¨ãã¦å¿«é©ã«ä½¿ãããã®è¨­å®
+              アプリとして快適に使うための設定
             </div>
 
-            {/* iOSåã */}
+            {/* iOS向け */}
             {/iPhone|iPad|iPod/.test(navigator.userAgent) ? (
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
                 <div style={{ padding: "12px", background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 8, fontSize: 14 }}>
-                    ãã¼ã ç»é¢ã«è¿½å ãã
+                    ホーム画面に追加する
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                    <span>ç»é¢ä¸é¨ã® <span style={{ fontSize: 18, verticalAlign: "middle" }}>&#x2934;&#xFE0F;</span>ï¼å±æãã¿ã³ï¼ãã¿ãã</span>
+                    <span>画面下部の <span style={{ fontSize: 18, verticalAlign: "middle" }}>&#x2934;&#xFE0F;</span>（共有ボタン）をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                    <span>ã¡ãã¥ã¼ãä¸ã«ã¹ã¯ã­ã¼ã«ãã¦<br /><strong>ããã¼ã ç»é¢ã«è¿½å ã</strong>ãã¿ãã</span>
+                    <span>メニューを上にスクロールして<br /><strong>「ホーム画面に追加」</strong>をタッブ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
-                    <span>å³ä¸ã®<strong>ãè¿½å ã</strong>ãã¿ãããã¦å®äº</span>
+                    <span>右上の<strong>「追加」</strong>をタップして完了</span>
                   </div>
                 </div>
                 <div style={{ padding: "10px 12px", background: "#f0fdf4", borderRadius: 8, border: "1px solid #bbf7d0", fontSize: 12, color: "#166534" }}>
-                  ãã¼ã ç»é¢ããèµ·åããã¨ãéå¸¸ã®ã¢ããªã¨åãããã«å¨ç»é¢ã§ä½¿ãã¾ãã
+                  ホーム画面から起動すると、通常のアプリと同じように全画面で使えます。
                 </div>
               </div>
             ) : (
-              /* Androidåã */
+              /* Android向け */
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
                 <div style={{ padding: "12px", background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: 8, fontSize: 14 }}>
-                    ãã¼ã ç»é¢ã«è¿½å ãã
+                    ホーム画面に追加する
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
-                    <span>ç»é¢å³ä¸ã® <strong>&#x22EE;</strong>ï¼ã¡ãã¥ã¼ï¼ãã¿ãã</span>
+                    <span>画面右上の <strong>&#x22EE;</strong>（メニュー）をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
-                    <span><strong>ããã¼ã ç»é¢ã«è¿½å ã</strong>ã¾ãã¯<br /><strong>ãã¢ããªãã¤ã³ã¹ãã¼ã«ã</strong>ãã¿ãã</span>
+                    <span><strong>「ホーム画面に追加」</strong>または<br /><strong>「アプリをインストール」</strong>をタップ</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <span style={{ background: "#3b82f6", color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
-                    <span><strong>ãè¿½å ã</strong>ã¾ãã¯<strong>ãã¤ã³ã¹ãã¼ã«ã</strong>ãã¿ãããã¦å®äº</span>
+                    <span><strong>「追加」</strong>または<strong>「インストール」</strong>をタップして完了</span>
                   </div>
                 </div>
                 <div style={{ padding: "10px 12px", background: "#f0fdf4", borderRadius: 8, border: "1px solid #bbf7d0", fontSize: 12, color: "#166534" }}>
-                  ãã¼ã ç»é¢ããèµ·åããã¨ãéå¸¸ã®ã¢ããªã¨åãããã«å¨ç»é¢ã§ä½¿ãã¾ãã
+                  ホーム画面から起動すると、通常のアプリと同じように全画面で使えます。
                 </div>
               </div>
             )}
@@ -1224,7 +1224,7 @@ export default function App() {
               }}
               style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 16 }}
             >
-              è¨­å®ã§ãã¾ãã
+              設定できました
             </button>
             <button
               onClick={() => {
@@ -1236,13 +1236,13 @@ export default function App() {
               }}
               style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%", marginTop: 8, fontSize: 12 }}
             >
-              ãã¨ã§è¨­å®ãã
+              あとで設定する
             </button>
           </div>
         </div>
       )}
 
-      {/* ãã¼ã¿ä¿ç®¡èª¬æã¢ã¼ãã«ï¼åå or ?ãã¿ã³ï¼ */}
+      {/* データ保管説明モーダル（初回 or ?ボタン） */}
       {showInfo && (
         <div style={styles.deleteOverlay} onClick={() => { setShowInfo(false); localStorage.setItem("harassment_app_info_seen", "1"); }}>
           <div
@@ -1250,28 +1250,28 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, textAlign: "center", color: "#374151" }}>
-              ãã¼ã¿ã®ä¿ç®¡ã«ã¤ãã¦
+              データの保管について
             </div>
             <div style={{ fontSize: 13, lineHeight: 1.8, color: "#4b5563" }}>
               <div style={{ marginBottom: 12, padding: "10px 12px", background: "#f0fdf4", borderRadius: 8, border: "1px solid #bbf7d0" }}>
-                <span style={{ fontWeight: 600, color: "#166534" }}>ããªãã®è¨é²ã¯å®å¨ã§ã</span><br />
-                ãã¼ã¿ã¯ãã®ç«¯æ«ã®ãã©ã¦ã¶åã«ã®ã¿ä¿å­ããã¾ãããµã¼ãã¼ã¸ã®éä¿¡ã¯ä¸åããã¾ãããä»ã®äººããè¦ããããã¨ã¯ããã¾ããã
+                <span style={{ fontWeight: 600, color: "#166534" }}>あなたの記録は安全です</span><br />
+                データはこの端末のブラウザ内にのみ保存されます。サーバーへの送信は一切ありません。他の人から見られることはありません。
               </div>
               <div style={{ marginBottom: 12, padding: "10px 12px", background: "#fffbeb", borderRadius: 8, border: "1px solid #fde68a" }}>
-                <span style={{ fontWeight: 600, color: "#92400e" }}>ãæ³¨æãã ãã</span><br />
-                ã»å¥ã®ç«¯æ«ãå¥ã®ãã©ã¦ã¶ããã¯è¨é²ãè¦ããã¾ãã<br />
-                ã»ãã©ã¦ã¶ã®ãã¼ã¿æ¶å»ãè¡ãã¨è¨é²ãæ¶ãã¾ã
+                <span style={{ fontWeight: 600, color: "#92400e" }}>ご注意ください</span><br />
+                ・別の端末や別のブラウザからは記録を見られません<br />
+                ・ブラウザのデータ消去を行うと記録も消えます
               </div>
               <div style={{ padding: "10px 12px", background: "#eff6ff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
-                <span style={{ fontWeight: 600, color: "#1e40af" }}>ããã¯ã¢ããæ©è½</span><br />
-                ä¸è¦§ç»é¢ã®ãããã¯ã¢ããä¿å­ããã¿ã³ãæ¼ãã¨ãè¨é²ã®ã³ãã¼ãç«¯æ«åã«èªåä¿å­ããã¾ããä¸ãä¸ãã¼ã¿ãæ¶ãã¦ããå¾©åããã¿ã³ã§åã«æ»ãã¾ããæ©ç¨®å¤æ´æã¯ããã¡ã¤ã«ã«æ¸ãåºããâæ°ç«¯æ«ã§ããã¡ã¤ã«ããå¾©åãã§ãã¼ã¿ãç§»è¡ã§ãã¾ãã
+                <span style={{ fontWeight: 600, color: "#1e40af" }}>バックアップ機能</span><br />
+                一覧画面の「バックアップ保存」ボタンを押すと、記録のコピーが端末内に自動保存されます。万が一データが消えても「復元」ボタンで元に戻せます。機種変更時は「ファイルに書き出し」→新端末で「ファイルから復元」でデータを移行できます。
               </div>
             </div>
             <button
               onClick={() => { setShowInfo(false); localStorage.setItem("harassment_app_info_seen", "1"); }}
               style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 18 }}
             >
-              ãããã¾ãã
+              わかりました
             </button>
           </div>
         </div>
