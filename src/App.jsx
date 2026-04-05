@@ -194,7 +194,7 @@ function AccessGate({ onUnlock }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: 20 }}>
       <div style={{ background: "#fff", borderRadius: 16, padding: "36px 28px", maxWidth: 340, width: "100%", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", textAlign: "center" }}>
-        <div style={{ fontSize: 28, marginBottom: 4 }}>\u{1F4DD}</div>
+        <div style={{ fontSize: 28, marginBottom: 4 }}>📝</div>
         <div style={{ fontSize: 18, fontWeight: 700, color: "#374151", marginBottom: 6 }}>マイメモ</div>
         <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 24 }}>ご利用にはアクセスコードが必要です</div>
         <form onSubmit={handleSubmit}>
