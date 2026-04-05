@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // ============================================================
-// ハラスメント証拠記録アプリ
+// マイメモアプリ
 // パワハラ・モラハラの記録を安全に保存・管理するツール
 // ============================================================
 
@@ -120,14 +120,14 @@ function generatePDFContent(records) {
     )
     .join("");
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ハラスメント証拠記録</title>
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>マイメモ</title>
 <style>@media print{body{margin:0;padding:20px;}}</style></head>
 <body style="font-family:'Hiragino Sans','Meiryo',sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#1f2937;">
-<h1 style="font-size:20px;border-bottom:2px solid #374151;padding-bottom:12px;margin-bottom:8px;">ハラスメント証拠記録</h1>
+<h1 style="font-size:20px;border-bottom:2px solid #374151;padding-bottom:12px;margin-bottom:8px;">マイメモ</h1>
 <p style="font-size:12px;color:#6b7280;margin-bottom:24px;">出力日: ${new Date().toLocaleDateString("ja-JP")}　/　記録件数: ${records.length}件</p>
 ${rows}
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center;">
-この文書は「ハラスメント証拠記録アプリ」により自動生成されました
+この文書は「マイメモ」により自動生成されました
 </div></body></html>`;
 }
 
@@ -1070,8 +1070,8 @@ export default function App() {
       <div style={styles.header}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 style={styles.headerTitle}>ハラスメント証拠記録</h1>
-            <div style={styles.headerSub}>パワハラ・モラハラの記録を安全に管理</div>
+            <h1 style={styles.headerTitle}>マイメモ</h1>
+            <div style={styles.headerSub}>日々の記録を安全に管理</div>
           </div>
           <button
             onClick={() => setShowInfo(true)}
