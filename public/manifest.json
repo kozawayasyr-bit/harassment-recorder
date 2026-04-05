@@ -1,0 +1,24 @@
+{
+  "name": "ハラスメント証拠記録",
+  "short_name": "ハラスメント記録",
+  "description": "パワハラ・モラハラの証拠を安全に記録・管理するアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#374151",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
