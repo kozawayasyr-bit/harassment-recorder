@@ -187,10 +187,10 @@ export default function App() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showSetup, setShowSetup] = useState(() => {
-    return !localStorage.getItem("harassment_app_setup_done_v2");
+    return !localStorage.getItem("harassment_app_setup_done_v3");
   });
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [showGuideTooltip, setShowGuideTooltip] = useState(!localStorage.getItem("harassment_app_guide_read_v2"));
+  const [showGuideTooltip, setShowGuideTooltip] = useState(!localStorage.getItem("harassment_app_guide_read_v3"));
   const fileInputRef = useRef(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
@@ -208,7 +208,7 @@ export default function App() {
     if (result.outcome === "accepted") {
       showToast("インストールしました！");
       setShowSetup(false);
-      localStorage.setItem("harassment_app_setup_done_v2", "1");
+      localStorage.setItem("harassment_app_setup_done_v3", "1");
     }
     setDeferredPrompt(null);
   };
@@ -1100,7 +1100,7 @@ export default function App() {
           </div>
           <div style={{ position: "relative", flexShrink: 0 }}>
             <button
-              onClick={() => { setShowSetup(true); setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v2", "1"); }}
+              onClick={() => { setShowSetup(true); setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v3", "1"); }}
               style={{
                 background: "#f0f9ff",
                 border: "1px solid #93c5fd",
@@ -1119,7 +1119,7 @@ export default function App() {
               title="使い方・設定"
             >
               📖 使い方
-              {!localStorage.getItem("harassment_app_guide_read_v2") && (
+              {!localStorage.getItem("harassment_app_guide_read_v3") && (
                 <span style={{
                   position: "absolute", top: -4, right: -4,
                   width: 10, height: 10, borderRadius: "50%",
@@ -1137,7 +1137,7 @@ export default function App() {
                 <div style={{ position: "absolute", top: -6, right: 16, width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "6px solid #1e293b" }} />
                 ホーム画面への追加方法や、大切な注意事項を確認できます。
                 <div
-                  onClick={() => { setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v2", "1"); }}
+                  onClick={() => { setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v3", "1"); }}
                   style={{ marginTop: 8, color: "#93c5fd", cursor: "pointer", fontSize: 11, textAlign: "right" }}
                 >閉じる</div>
               </div>
@@ -1284,7 +1284,7 @@ export default function App() {
                         <button
               onClick={() => {
                 setShowSetup(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); }
+                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
               }}
@@ -1295,7 +1295,7 @@ export default function App() {
             <button
               onClick={() => {
                 setShowSetup(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); }
+                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
               }}
