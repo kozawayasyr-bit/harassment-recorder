@@ -634,7 +634,7 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>籾神的・身体的影響</label>
+        <label style={styles.label}>精神的・身体的影響</label>
         <textarea
           style={{ ...styles.textarea, minHeight: 60 }}
           placeholder="そのとき感じたこと、体調の変化など"
