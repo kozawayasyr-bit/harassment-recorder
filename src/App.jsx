@@ -131,7 +131,7 @@ function generateCSV(records) {
     "加害者",
     "種別",
     "深刻度",
-    "詳細内容",
+    "詳細内容�,
     "目撃者",
     "精神的影響",
     "画像数",
@@ -230,7 +230,7 @@ export default function App() {
       );
       setRecords(updatedRecords);
       setEditingId(null);
-      showToast("記録を更新しました — バックアップを保存中…");
+      showToast("記録を更新しました");
     } else {
       const newRecord = {
         ...form,
@@ -239,10 +239,10 @@ export default function App() {
       };
       updatedRecords = [newRecord, ...records];
       setRecords(updatedRecords);
-      showToast("記録を保存しました — バックアップを保存中…");
+      showToast("記録を保存しました");
     }
-    // 自動バックアップをダウンロードフォルダに保存
-    setTimeout(() => downloadBackup(updatedRecords), 300);
+    // 注: 自動ダウンロードはiOSで問題が起きるため無効化
+    // 手動の「バックアップ保存」ボタンからダウンロードしてください
     setForm({ ...INITIAL_FORM, date: new Date().toISOString().split("T")[0] });
     setView("list");
   };
@@ -597,7 +597,7 @@ export default function App() {
         <label style={styles.label}>加害者（氏名・役職など） *</label>
         <input
           style={styles.input}
-          placeholder="例: 山田部長"
+          placeholder="例: 屰田部長"
           value={form.perpetrator}
           onChange={(e) => setForm({ ...form, perpetrator: e.target.value })}
         />
@@ -607,14 +607,14 @@ export default function App() {
         <label style={styles.label}>場所</label>
         <input
           style={styles.input}
-          placeholder="例: 3风会議室、オフィスフロア"
+          placeholder="例: 3階会議室、オフィスフロア"
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>詳細内宻 *</label>
+        <label style={styles.label}>詳細内容 *</label>
         <textarea
           style={styles.textarea}
           placeholder="何が起きたか、具体的に記録してください。発言の引用や状況を詳しく書くと証拠として有効です。"
@@ -627,7 +627,7 @@ export default function App() {
         <label style={styles.label}>目撃者</label>
         <input
           style={styles.input}
-          placeholder="例: 鈰木さん（同じ課）"
+          placeholder="例: 鈴木さん（同じ課）"
           value={form.witnesses}
           onChange={(e) => setForm({ ...form, witnesses: e.target.value })}
         />
@@ -1065,8 +1065,8 @@ export default function App() {
                 ・ブラウザのデータ消去を行うと記録も消えます
               </div>
               <div style={{ padding: "10px 12px", background: "#eff6ff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
-                <span style={{ fontWeight: 600, color: "#1e40af" }}>自動バックアップ機能</span><br />
-                記録を保存するたびに、バックアップファイルが端末のダウンロードフォルダに自動保存されます。万が一データが消えても、「バックアップから復元」で元に戻せます。
+                <span style={{ fontWeight: 600, color: "#1e40af" }}>バックアップ機能</span><br />
+                一覧画面の「バックアップ保存」ボタンから、記録をファイルとして保存できます。万が一データが消えても、「復元」ボタンで元に戻せます。
               </div>
             </div>
             <button
