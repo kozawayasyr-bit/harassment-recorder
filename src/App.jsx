@@ -421,6 +421,8 @@ export default function App() {
       minHeight: "100vh",
       color: "#1f2937",
       position: "relative",
+      overflowX: "hidden",
+      width: "100%",
     },
     header: {
       background: "#fff",
