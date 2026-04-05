@@ -101,7 +101,7 @@ function generatePDFContent(records) {
       ${
         r.workImpact
           ? `<div style="margin-top:10px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">業務上の影響</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">業務への支障</div>
         <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(r.workImpact)}</div>
       </div>`
           : ""
@@ -143,7 +143,7 @@ function generateCSV(records) {
     "詳細内容",
     "目撃者",
     "精神的影響",
-    "業務上の影響",
+    "業務への支障",
     "画像数",
   ];
   const csvEscape = (s) => {
@@ -698,10 +698,10 @@ export default function App() {
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>業務上の影響</label>
+        <label style={styles.label}>業務への支障</label>
         <textarea
           style={{ ...styles.textarea, minHeight: 60 }}
-          placeholder="業務の遅延、配置転換、評価への影響など"
+          placeholder="例: 業務に集中できない、担当を外された、納期に遅れが出た、会議で発言できなくなった"
           value={form.workImpact}
           onChange={(e) => setForm({ ...form, workImpact: e.target.value })}
         />
@@ -1008,7 +1008,7 @@ export default function App() {
 
           {r.workImpact && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>業務上の影響</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>業務への支障</div>
               <div
                 style={{
                   fontSize: 14,
