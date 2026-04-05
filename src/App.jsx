@@ -1288,7 +1288,7 @@ export default function App() {
                         <button
               onClick={() => {
                 setShowSetup(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); localStorage.setItem("harassment_app_info_seen_v2", "1"); }
+                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
               }}
@@ -1299,7 +1299,7 @@ export default function App() {
             <button
               onClick={() => {
                 setShowSetup(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); localStorage.setItem("harassment_app_info_seen_v2", "1"); }
+                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v2", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
               }}
@@ -1313,7 +1313,7 @@ export default function App() {
 
       {/* データ保管説明モーダル（初回 or ?ボタン） */}
       {showInfo && (
-        <div style={styles.deleteOverlay} onClick={() => { setShowInfo(false); if (dontShowAgain) localStorage.setItem("harassment_app_info_seen_v2", "1"); setDontShowAgain(false); }}>
+        <div style={styles.deleteOverlay} onClick={() => { setShowInfo(false); }}>
           <div
             style={{ ...styles.deleteModal, maxWidth: 360, textAlign: "left", maxHeight: "85vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
@@ -1336,12 +1336,8 @@ export default function App() {
                 一覧画面の「バックアップ保存」ボタンを押すと、記録のコピーが端末内に自動保存されます。万が一データが消えても「復元」ボタンで元に戻せます。機種変更時は「ファイルに書き出し」→新端末で「ファイルから復元」でデータを移行できます。
               </div>
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16, marginBottom: 4, cursor: "pointer" }}>
-              <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} style={{ width: 16, height: 16 }} />
-              <span style={{ fontSize: 12, color: "#6b7280" }}>今後表示しない</span>
-            </label>
             <button
-              onClick={() => { setShowInfo(false); if (dontShowAgain) localStorage.setItem("harassment_app_info_seen_v2", "1"); setDontShowAgain(false); }}
+              onClick={() => { setShowInfo(false); }}
               style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 18 }}
             >
               わかりました
