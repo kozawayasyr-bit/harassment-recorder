@@ -190,6 +190,8 @@ export default function App() {
     return !localStorage.getItem("harassment_app_setup_done_v3");
   });
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [isManualOpen, setIsManualOpen] = useState(false);
+  const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
   const [showGuideTooltip, setShowGuideTooltip] = useState(!localStorage.getItem("harassment_app_guide_read_v3"));
   const fileInputRef = useRef(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -684,7 +686,7 @@ export default function App() {
         <label style={styles.label}>場所</label>
         <input
           style={styles.input}
-          placeholder="例: 3风会議室、オフィスフロア"
+          placeholder="例: 3F会議室、オフィスフロア"
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}
         />
@@ -1100,7 +1102,7 @@ export default function App() {
           </div>
           <div style={{ position: "relative", flexShrink: 0 }}>
             <button
-              onClick={() => { setShowSetup(true); setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v3", "1"); }}
+              onClick={() => { setShowSetup(true); setIsManualOpen(true); setShowGuideTooltip(false); localStorage.setItem("harassment_app_guide_read_v3", "1"); }}
               style={{
                 background: "#f0f9ff",
                 border: "1px solid #93c5fd",
@@ -1200,6 +1202,9 @@ export default function App() {
             style={{ ...styles.deleteModal, maxWidth: 370, textAlign: "left", maxHeight: "85vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
+            <div style={{ position: "relative" }}>
+              <button onClick={() => { setShowSetup(false); setIsManualOpen(false); setDontShowAgain(false); }} style={{ position: "absolute", top: -8, right: -8, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9ca3af", padding: 4, lineHeight: 1 }} aria-label="閉じる">×</button>
+            </div>
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, textAlign: "center", color: "#374151" }}>
               はじめに
             </div>
@@ -1277,24 +1282,30 @@ export default function App() {
               </div>
             )}
 
-                        <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16, marginBottom: 4, cursor: "pointer" }}>
+                        {!isManualOpen && (
+            <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16, marginBottom: 4, cursor: "pointer" }}>
                           <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} style={{ width: 16, height: 16 }} />
                           <span style={{ fontSize: 12, color: "#6b7280" }}>今後表示しない</span>
                         </label>
+            )}
                         <button
               onClick={() => {
                 setShowSetup(false);
+                setIsManualOpen(false);
                 if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
               }}
               style={{ ...styles.btn("#374151", "#fff"), width: "100%", marginTop: 16 }}
             >
-              設定できました
+              {!isStandalone && (
+            設定できました
             </button>
+            )}
             <button
               onClick={() => {
                 setShowSetup(false);
+                setIsManualOpen(false);
                 if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
                 setDontShowAgain(false);
                 setShowInfo(true);
@@ -1314,6 +1325,9 @@ export default function App() {
             style={{ ...styles.deleteModal, maxWidth: 360, textAlign: "left", maxHeight: "85vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
+            <div style={{ position: "relative" }}>
+              <button onClick={() => { setShowInfo(false); setDontShowAgain(false); }} style={{ position: "absolute", top: -8, right: -8, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9ca3af", padding: 4, lineHeight: 1 }} aria-label="閉じる">×</button>
+            </div>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, textAlign: "center", color: "#374151" }}>
               データの保管について
             </div>
