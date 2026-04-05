@@ -187,11 +187,7 @@ export default function App() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showSetup, setShowSetup] = useState(() => {
-    if (localStorage.getItem("harassment_app_setup_done_v2")) return false;
-    // PWAとして起動済みならセットアップ不要
-    if (window.matchMedia("(display-mode: standalone)").matches) return false;
-    if (window.navigator.standalone) return false;
-    return true;
+    return !localStorage.getItem("harassment_app_setup_done_v2");
   });
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showGuideTooltip, setShowGuideTooltip] = useState(!localStorage.getItem("harassment_app_guide_read_v2"));
