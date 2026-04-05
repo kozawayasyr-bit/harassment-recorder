@@ -173,8 +173,80 @@ function generateCSV(records) {
   return "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
 }
 
+// ---- アクセスコード ----
+const ACCESS_CODE = "calmstory2026";
+
+function AccessGate({ onUnlock }) {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (code.trim() === ACCESS_CODE) {
+      localStorage.setItem("harassment_app_unlocked", "1");
+      onUnlock();
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: 20 }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: "36px 28px", maxWidth: 340, width: "100%", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", textAlign: "center" }}>
+        <div style={{ fontSize: 28, marginBottom: 4 }}>\u{1F4DD}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#374151", marginBottom: 6 }}>マイメモ</div>
+        <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 24 }}>ご利用にはアクセスコードが必要です</div>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="アクセスコードを入力"
+            style={{
+              width: "100%", padding: "12px 14px", border: error ? "2px solid #ef4444" : "1px solid #d1d5db",
+              borderRadius: 10, fontSize: 15, textAlign: "center", outline: "none",
+              boxSizing: "border-box", marginBottom: 12, letterSpacing: 1,
+              transition: "border-color 0.2s",
+            }}
+            autoFocus
+          />
+          {error && <div style={{ fontSize: 12, color: "#ef4444", marginBottom: 8 }}>コードが正しくありません</div>}
+          <button
+            type="submit"
+            style={{
+              width: "100%", padding: "12px", border: "none", borderRadius: 10,
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              background: code.trim() ? "#374151" : "#e5e7eb",
+              color: code.trim() ? "#fff" : "#9ca3af",
+              transition: "background 0.2s",
+            }}
+          >
+            はじめる
+          </button>
+        </form>
+        <div style={{ fontSize: 11, color: "#d1d5db", marginTop: 20, lineHeight: 1.6 }}>
+          アクセスコードはnote記事にてご案内しています
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---- メインコンポーネント ----
 export default function App() {
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return localStorage.getItem("harassment_app_unlocked") === "1";
+  });
+
+  if (!isUnlocked) {
+    return <AccessGate onUnlock={() => setIsUnlocked(true)} />;
+  }
+
+  return <MainApp />;
+}
+
+function MainApp() {
   const [records, setRecords] = useState(() => loadRecords());
   const [form, setForm] = useState({ ...INITIAL_FORM, date: new Date().toISOString().split("T")[0] });
   const [view, setView] = useState("form"); // list | form | detail
@@ -1302,18 +1374,20 @@ export default function App() {
                 設定できました
               </button>
             )}
-            <button
-              onClick={() => {
-                setShowSetup(false);
-                setIsManualOpen(false);
-                if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
-                setDontShowAgain(false);
-                setShowInfo(true);
-              }}
-              style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%", marginTop: 8, fontSize: 12 }}
-            >
-              あとで設定する
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={() => {
+                  setShowSetup(false);
+                  setIsManualOpen(false);
+                  if (dontShowAgain) { localStorage.setItem("harassment_app_setup_done_v3", "1"); }
+                  setDontShowAgain(false);
+                  setShowInfo(true);
+                }}
+                style={{ ...styles.btn("#f3f4f6", "#6b7280"), width: "100%", marginTop: 8, fontSize: 12 }}
+              >
+                あとで設定する
+              </button>
+            )}
           </div>
         </div>
       )}
